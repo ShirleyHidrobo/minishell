@@ -1,6 +1,7 @@
 
 #include "../include/minishell.h"
 
+extern volatile int g_signal;
 //---------------------------------execve----------------------------------
 
 int	main(int argc, char **argv, char **envp)
@@ -14,12 +15,29 @@ int	main(int argc, char **argv, char **envp)
 	handle_signals();
 	while (1)
 	{
+		//Display prompt and read input
 		input = readline("minishell> ");
+		//check for EOF
 		if (!input)
 		{
 			printf("exit\n");
 			break ;
 		}
+		if(g_signal == SIGINT)
+		{
+			g_signal = 0;
+			rl_done = 0;
+			write(1, "\n", 1);
+			rl_replace_line("", 0);
+			rl_on_new_line();
+			rl_redisplay();
+			free(input);
+			continue ;
+		}
+		/* The handler doesn't call non-async-safe functions → it only sets g_signal = sig
+✔ You use rl_done = 1 to force readline() to finish → clean behavior
+✔ In the main loop, you process the signal correctly
+✔ You don't violate the subject rule (only 1 global and no global structures)*/
 		if (*input)
 			add_history(input);
 		ts = lex_line(input);
@@ -197,3 +215,6 @@ int	main(int argc, char **argv, char **envp)
 // 	}
 // 	return (0);
 // }
+// The fork system call returns twice, once for each process. This sounds counter intuitive at first. But let’s take a look at what goes underneath the hood.
+
+//     By invoking fork we are creating a new branch in our program. This is not the same as a traditional if-else branch. fork creates a copy of the current process and creates a new one out of it. The resulting system call returns the process id of the child process.
