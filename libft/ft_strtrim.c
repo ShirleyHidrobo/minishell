@@ -12,17 +12,17 @@
 
 #include "libft.h"
 
-size_t	ft_strlen(const char *s)
-{
-	int	count;
-
-	count = 0;
-	while (s[count] != '\0')
-	{
-		count += 1;
-	}
-	return (count);
-}
+// size_t	ft_strlen(const char *s)
+// {
+// 	int	count;
+//
+// 	count = 0;
+// 	while (s[count] != '\0')
+// 	{
+// 		count += 1;
+// 	}
+// 	return (count);
+// }
 
 static int	ft_chack(char c, char const *set)
 {

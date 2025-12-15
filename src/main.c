@@ -1,220 +1,148 @@
 
+
 #include "../include/minishell.h"
+#include "../gnl/get_next_line.h"
+#include <readline/readline.h>
+#include <readline/history.h>
 
-extern volatile int g_signal;
-//---------------------------------execve----------------------------------
+int g_exit_status = 0;
 
-int	main(int argc, char **argv, char **envp)
+static void	trim_cr(char *s)
 {
-	char	*input;
-	t_token	*ts;
-	t_cmd	*pl;
+	size_t	n;
+
+	if (!s)
+		return ;
+	n = ft_strlen(s);
+	if (n > 0 && s[n - 1] == '\r')
+		s[n - 1] = '\0';
+}
+
+/* تنظیم شل در حالت عادی */
+static void init_interactive_signals(void)
+{
+	struct sigaction sa;
+
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	sa.sa_handler = sigint_handler;
+	sigaction(SIGINT, &sa, NULL);
+	signal(SIGQUIT, SIG_IGN);
+}
+
+/* مدیریت خط ورودی */
+static int process_line(char *line, char ***envp)
+{
+	t_token *ts;
+	t_cmd   *cmds;
+	int     hd;
+
+	ts = lex_line(line);
+	if (!ts)
+		return (0);
+	cmds = parse_tokens(ts);
+	token_list_clear(&ts);
+	if (!cmds)
+		return (0);
+	if (expand_all(cmds, *envp, g_exit_status))
+	{
+		free_cmds(cmds);
+		return (0);
+	}
+	hd = setup_heredocs(cmds, *envp, g_exit_status);
+	if (hd != 0)
+	{
+		free_cmds(cmds);
+		return (0);
+	}
+	g_exit_status = exec_pipeline(cmds, envp);
+	free_cmds(cmds);
+	return (0);
+}
+
+static void	process_pasted_lines(char *line, char ***envp)
+{
+	size_t	i;
+	size_t	start;
+	char	*one;
+
+	i = 0;
+	start = 0;
+	while (1)
+	{
+		if (line[i] == '\r')
+			line[i] = '\n';
+		if (line[i] == '\n' || line[i] == '\0')
+		{
+			one = ft_substr(line, start, i - start);
+			if (one && one[0] != '\0')
+			{
+				trim_cr(one);
+				add_history(one);
+				process_line(one, envp);
+			}
+			free(one);
+			if (line[i] == '\0')
+				break ;
+			start = i + 1;
+		}
+		i++;
+	}
+}
+
+int main(int argc, char **argv, char **envp_in)
+{
+	char	*line;
+	char	**envp;
 
 	(void)argc;
 	(void)argv;
-	handle_signals();
+	envp = dup_env(envp_in);
+// 	write(2, "envp_in count = ", 16);
+// ft_putnbr_fd(env_count(envp_in), 2);
+// write(2, "\n", 1);
+
+// envp = dup_env(envp_in);
+
+// write(2, "envp dup count = ", 17);
+// ft_putnbr_fd(env_count(envp), 2);
+// write(2, "\n", 1);
+/////
+	ms_set_termios();
+	init_interactive_signals();
 	while (1)
 	{
-		//Display prompt and read input
-		input = readline("minishell> ");
-		//check for EOF
-		if (!input)
+		if (!isatty(fileno(stdin)))
+		   {
+		   	 break ;
+		   	// char *temp;
+		   	// temp = get_next_line(fileno(stdin));
+		   	// line = ft_strtrim(temp, "\n");
+		   	// free(temp);
+		   }
+		else
+			line = readline("minishell> ");
+		if (!line)
 		{
-			printf("exit\n");
+			write(1, "exit\n", 5);
 			break ;
 		}
-		if(g_signal == SIGINT)
-		{
-			g_signal = 0;
-			rl_done = 0;
-			write(1, "\n", 1);
-			rl_replace_line("", 0);
-			rl_on_new_line();
-			rl_redisplay();
-			free(input);
-			continue ;
-		}
-		/* The handler doesn't call non-async-safe functions → it only sets g_signal = sig
-✔ You use rl_done = 1 to force readline() to finish → clean behavior
-✔ In the main loop, you process the signal correctly
-✔ You don't violate the subject rule (only 1 global and no global structures)*/
-		if (*input)
-			add_history(input);
-		ts = lex_line(input);
-		if (!ts)
-			fprintf(stderr, "lexer error\n");
-		else
-		{
-			pl = parse_tokens(ts);
-			if (pl)
-			{
-				exec_pipeline(pl, envp);
-				free_cmds(pl);
-			}
-			free_tokens(ts);
-		}
-		free(input);
+		trim_cr(line);
+		// if (line[0] != '\0')
+		// 	add_history(line);
+		// process_line(line, &envp);
+		process_pasted_lines(line, &envp);
+
+// 		ft_putnbr_fd(env_count(envp), 2);
+// write(2, "  <- before\n", 12);
+
+// process_pasted_lines(line, &envp);
+
+// ft_putnbr_fd(env_count(envp), 2);
+// write(2, "  <- after\n", 11);
+///
+		free(line);
 	}
-	return (0);
+	free_env(envp);
+	return (g_exit_status);
 }
-//---------------------------------parsing----------------------------------
-
-// static void	print_cmds(t_cmd *c)
-// {
-// 	size_t		i;
-// 	t_redir		*r;
-// 	const char	*t;
-// 	const char	*quoted;
-
-// 	while (c)
-// 	{
-// 		fprintf(stdout, "CMD: ");
-// 		if (c->argv)
-// 		{
-// 			i = 0;
-// 			while (c->argv[i])
-// 			{
-// 				fprintf(stdout, "[%s] ", c->argv[i]);
-// 				i++;
-// 			}
-// 		}
-// 		if (c->redirs)
-// 		{
-// 			r = c->redirs;
-// 			while (r)
-// 			{
-// 				if (r->type == R_IN)
-// 					t = "<";
-// 				else if (r->type == R_OUT)
-// 					t = ">";
-// 				else if (r->type == R_APPEND)
-// 					t = ">>";
-// 				else
-// 					t = "<<";
-// 				if (r->type == R_HEREDOC)
-// 					quoted = " (quoted)";
-// 				else
-// 					quoted = "";
-// 				fprintf(stdout, "{%s %s%s} ", t, r->target, quoted);
-// 				r = r->next;
-// 			}
-// 		}
-// 		fprintf(stdout, "\n");
-// 		c = c->next;
-// 	}
-// }
-
-// int	main(void)
-// {
-// 	char	*input;
-// 	t_token	*ts;
-// 	t_cmd	*pl;
-
-// 	handle_signals();
-// 	while (1)
-// 	{
-
-// 		input = readline("minishell> ");
-// 		if (!input)
-// 		{
-// 			printf("exit\n");
-// 			break ;
-// 		}
-// 		if (*input)
-// 			add_history(input);
-// 		ts = lex_line(input);
-// 		if (!ts)
-// 			fprintf(stderr, "minishell: lexer error (unclosed quote?)\n");
-// 		else
-// 		{
-// 			pl = parse_tokens(ts);
-// 			if (pl)
-// 			{
-// 				print_cmds(pl);
-// 				free_cmds(pl);
-// 			}
-// 			free_tokens(ts);
-// 		}
-// 		free(input);
-// 	}
-// 	return (0);
-// }
-
-//---------------------------------lexer----------------------------------
-// static const char	*tok_name(int t)
-// {
-// 	if (t == TOK_WORD)
-// 		return ("WORD");
-// 	if (t == TOK_PIPE)
-// 		return ("PIPE");
-// 	if (t == TOK_REDIR_IN)
-// 		return ("REDIR_IN");
-// 	if (t == TOK_REDIR_OUT)
-// 		return ("REDIR_OUT");
-// 	if (t == TOK_HEREDOC)
-// 		return ("HEREDOC");
-// 	if (t == TOK_APPEND)
-// 		return ("APPEND");
-// 	return ("?");
-// }
-
-// int	main(void)
-// {
-// 	char	*input;
-// 	t_token	*ts;
-// 	t_token	*cur;
-
-// 	handle_signals();
-// 	while (1)
-// 	{
-// 		input = readline("minishell> ");
-// 		if (!input)
-// 		{
-// 			printf("exit\n");
-// 			break ;
-// 		}
-// 		if (*input)
-// 			add_history(input);
-// 		ts = lex_line(input);
-// 		if (!ts)
-// 			fprintf(stderr, "minishell: lexer error (unclosed quote?)\n");
-// 		cur = ts;
-// 		while (cur)
-// 		{
-// 			if (cur->val)
-// 				printf("[%s:\"%s\"] ", tok_name(cur->type), cur->val);
-// 			else
-// 				printf("[%s] ", tok_name(cur->type));
-// 			cur = cur->next;
-// 		}
-// 		if (ts)
-// 			printf("\n");
-// 		free_tokens(ts);
-// 		free(input);
-// 	}
-// 	return (0);
-// }
-
-// int	main(void)
-// {
-// 	char	*input;
-
-// 	handle_signals();
-// 	while (1)
-// 	{
-// 		input = readline("yash> ");
-// 		if (!input)
-// 		{
-// 			printf("exit\n");
-// 			break ;
-// 		}
-// 		if (*input)
-// 			add_history(input);
-// 		printf("You typed: %s\n", input);
-// 		free(input);
-// 	}
-// 	return (0);
-// }
-// The fork system call returns twice, once for each process. This sounds counter intuitive at first. But let’s take a look at what goes underneath the hood.
-
-//     By invoking fork we are creating a new branch in our program. This is not the same as a traditional if-else branch. fork creates a copy of the current process and creates a new one out of it. The resulting system call returns the process id of the child process.
