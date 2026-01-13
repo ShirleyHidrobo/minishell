@@ -1,6 +1,8 @@
-#include "heredoc.h"
 
-static int	hd_process_redirs(t_redir *r, char **envp, int last_status)
+#include "heredoc.h"
+#include "signals.h"
+
+static int	hd_process_redirs(t_redir *r, char **envp, int *last_status)
 {
 	int	res;
 
@@ -17,7 +19,7 @@ static int	hd_process_redirs(t_redir *r, char **envp, int last_status)
 	return (0);
 }
 
-static int	hd_process_cmds(t_cmd *cmds, char **envp, int last_status)
+static int	hd_process_cmds(t_cmd *cmds, char **envp, int *last_status)
 {
 	t_cmd	*cur;
 	int		res;
@@ -43,10 +45,11 @@ static int	hd_finish(int res)
 	return (0);
 }
 
-int	setup_heredocs(t_cmd *cmds, char **envp, int last_status)
+int	setup_heredocs(t_cmd *cmds, char **envp, int *last_status)
 {
 	int	res;
 
+	g_sig = 0;
 	set_sig_heredoc_parent();
 	res = hd_process_cmds(cmds, envp, last_status);
 	return (hd_finish(res));

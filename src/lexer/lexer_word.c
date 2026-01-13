@@ -1,4 +1,5 @@
-#include "minishell.h"
+
+#include "lexer.h"
 
 // ensure buffer has at least new_len + 1 capacity
 static int	ensure_buf_cap(t_wbuf *b, size_t new_len)
@@ -36,33 +37,6 @@ static int	word_append_char(t_wbuf *b, char c)
 	return (0);
 }
 
-// read everything inside quotes and append to buffer (without the quotes)
-// handles backslash escapes inside double quotes
-// static int	read_quoted(const char *s, size_t *i, t_wbuf *b)
-// {
-// 	char	q;
-
-// 	q = s[*i];
-// 	(*i)++;
-// 	while (s[*i] && s[*i] != q)
-// 	{
-// 		if (q == '\"' && s[*i] == '\\' && s[*i + 1])
-// 		{
-// 			if (word_append_char(b, s[*i + 1]) < 0)
-// 				return (-1);
-// 			*i += 2;
-// 			continue ;
-// 		}
-// 		if (word_append_char(b, s[*i]) < 0)
-// 			return (-1);
-// 		(*i)++;
-// 	}
-// 	if (!s[*i])
-// 		return (-1);
-// 	(*i)++;
-// 	return (0);
-// }
-
 // read everything inside quotes and append to buffer (INCLUDING the quotes)
 static int	read_quoted(const char *s, size_t *i, t_wbuf *b)
 {
@@ -91,13 +65,6 @@ int	process_word_char(const char *s, size_t *i, t_wbuf *b)
 {
 	if (s[*i] == '\'' || s[*i] == '\"')
 		return (read_quoted(s, i, b));
-	if (s[*i] == '\\' && s[*i + 1])
-	{
-		if (word_append_char(b, s[*i + 1]) < 0)
-			return (-1);
-		*i += 2;
-		return (0);
-	}
 	if (word_append_char(b, s[*i]) < 0)
 		return (-1);
 	(*i)++;

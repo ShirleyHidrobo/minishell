@@ -1,5 +1,9 @@
 
-#include "minishell.h"
+#include "builtins.h"
+#include "libft.h"
+#include "env.h"
+#include "exec.h"
+#include <unistd.h>
 
 static void	print_cd_error(const char *msg, const char *arg)
 {
@@ -58,7 +62,6 @@ int	builtin_cd(char **argv, char ***envp)
 	/* case: cd */
 	if (!argv[1])
 	{
-		// target = getenv("HOME");
 		target = get_env_val(*envp, "HOME");
 		if (!target)
 		{

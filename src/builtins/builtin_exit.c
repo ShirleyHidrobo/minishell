@@ -1,4 +1,6 @@
-#include "minishell.h"
+
+#include "builtins.h"
+#include "exec.h"
 
 static int	is_numeric(const char *s)
 {
@@ -33,12 +35,12 @@ static void	exit_error(const char *msg, const char *arg)
 	write(2, "\n", 1);
 }
 
-static int	handle_exit_args(char **argv, int *should_exit)
+static int	handle_exit_args(char **argv, int last_status, int *should_exit)
 {
 	if (!argv[1])
 	{
 		*should_exit = 1;
-		return (g_exit_status);
+		return (last_status);
 	}
 	if (!is_numeric(argv[1]))
 	{
@@ -56,14 +58,13 @@ static int	handle_exit_args(char **argv, int *should_exit)
 	return (ft_atoi(argv[1]));
 }
 
-int	builtin_exit(char **argv)
+int	builtin_exit(char **argv, int last_status)
 {
 	int	status;
 	int	should_exit;
 
-	write(1, "exit\n", 5);
-	status = handle_exit_args(argv, &should_exit);
+	status = handle_exit_args(argv, last_status, &should_exit);
 	if (should_exit)
-		exit(status);
+		return (EXIT_REQ_BASE + (status & 255));
 	return (status);
 }

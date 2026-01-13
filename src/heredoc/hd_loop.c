@@ -1,4 +1,9 @@
+
 #include "heredoc.h"
+#include "signals.h"
+#include "expand.h"
+#include "libft.h"
+#include <readline/readline.h>
 
 static int	hd_is_delim(const char *line, const char *delim)
 {
@@ -18,7 +23,10 @@ static char	*hd_expand_if_needed(t_hd *h, char *line, int *need_free)
 	if (h->quoted)
 		return (line);
 	exp = expand_word(line, h->envp, h->last_status);
-	*need_free = 1;
+	if (!exp)
+		return (NULL);
+	if (exp != line)
+		*need_free = 1;
 	return (exp);
 }
 
@@ -48,6 +56,12 @@ int	hd_read_loop(t_hd *h)
 	while (1)
 	{
 		line = readline("> ");
+		if (g_sig == SIGINT)
+		{
+			if (line)
+				free(line);
+			return (2);
+		}
 		if (!line)
 			return (0);
 		if (hd_is_delim(line, h->delim))

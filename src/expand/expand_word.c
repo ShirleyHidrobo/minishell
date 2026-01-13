@@ -1,5 +1,5 @@
 
-#include "minishell.h"
+#include "expand.h"
 
 static void	init_exp(t_exp *e, char **envp, int last_status)
 {
@@ -17,6 +17,11 @@ static int	expand_dollar(const char *s, size_t *i, t_exp *e)
 		return (append_char(e, '$'));
 	if (s[*i] == '?')
 		return (expand_status(i, e));
+	if (ft_isdigit((unsigned char)s[*i]))
+	{
+		(*i)++;
+		return (0);
+	}
 	if (!is_var_start(s[*i]))
 		return (append_char(e, '$'));
 	if (expand_env_var(s, i, e))
@@ -67,8 +72,8 @@ char	*expand_word(const char *s, char **envp, int last_status)
 		return (NULL);
 	init_exp(&e, envp, last_status);
 	i = 0;
-	in_s = 0;
-	in_d = 0;
+	in_s = 0; // single quote
+	in_d = 0; // double quote
 	while (s[i])
 	{
 		if (handle_quotes(s, &i, &in_s, &in_d))

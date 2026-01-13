@@ -1,4 +1,6 @@
+
 #include "heredoc.h"
+#include "libft.h"
 
 char	*hd_make_name(void)
 {
@@ -6,7 +8,6 @@ char	*hd_make_name(void)
 	char		*num;
 	char		*name;
 
-	idx++;
 	num = ft_itoa(idx);
 	if (!num)
 		return (NULL);
