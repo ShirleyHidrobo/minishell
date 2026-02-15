@@ -1,7 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   lexer_op.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 14:01:40 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 14:01:42 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "lexer.h"
 
-// match operator at position i and set how many chars were consumed 
 static t_tok_type	match_op(const char *s, size_t i, size_t *consumed)
 {
 	*consumed = 1;
@@ -22,12 +32,11 @@ static t_tok_type	match_op(const char *s, size_t i, size_t *consumed)
 	if (s[i] == '>')
 		return (TOK_REDIR_OUT);
 	if (s[i] == ';')
-    	return (TOK_SEMI);
+		return (TOK_SEMI);
 	*consumed = 0;
 	return (TOK_WORD);
 }
 
-// try to read an operator token at s[*i]
 int	lex_try_operator(const char *s, size_t *i, t_token **lst)
 {
 	size_t		consumed;

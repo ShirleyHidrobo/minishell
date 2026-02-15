@@ -1,5 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   termios.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 13:49:08 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 13:49:36 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "terminal.h"
+#include "shell.h"
 
 void	ms_set_termios(int on)
 {
@@ -12,4 +24,9 @@ void	ms_set_termios(int on)
 	else
 		t.c_lflag &= ~ECHOCTL;
 	tcsetattr(STDIN_FILENO, TCSANOW, &t);
+}
+
+void	ms_restore_termios(t_shell_ctx *ctx)
+{
+	tcsetattr(STDIN_FILENO, TCSANOW, &ctx->term_orig);
 }

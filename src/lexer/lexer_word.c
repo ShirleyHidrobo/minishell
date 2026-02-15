@@ -1,7 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   lexer_word.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 13:58:58 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 13:59:00 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "lexer.h"
 
-// ensure buffer has at least new_len + 1 capacity
 static int	ensure_buf_cap(t_wbuf *b, size_t new_len)
 {
 	char	*new_data;
@@ -27,7 +37,6 @@ static int	ensure_buf_cap(t_wbuf *b, size_t new_len)
 	return (0);
 }
 
-// append a single character to the word buffer
 static int	word_append_char(t_wbuf *b, char c)
 {
 	if (ensure_buf_cap(b, b->len + 1) < 0)
@@ -37,7 +46,6 @@ static int	word_append_char(t_wbuf *b, char c)
 	return (0);
 }
 
-// read everything inside quotes and append to buffer (INCLUDING the quotes)
 static int	read_quoted(const char *s, size_t *i, t_wbuf *b)
 {
 	char	q;
@@ -60,7 +68,6 @@ static int	read_quoted(const char *s, size_t *i, t_wbuf *b)
 	return (0);
 }
 
-// read one logical "word char": plain char, escape, or whole quoted block
 int	process_word_char(const char *s, size_t *i, t_wbuf *b)
 {
 	if (s[*i] == '\'' || s[*i] == '\"')
@@ -71,7 +78,6 @@ int	process_word_char(const char *s, size_t *i, t_wbuf *b)
 	return (0);
 }
 
-// read one WORD token starting at s[*i] and return its string
 char	*read_word(const char *s, size_t *i)
 {
 	t_wbuf	b;

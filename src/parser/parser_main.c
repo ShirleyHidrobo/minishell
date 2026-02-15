@@ -1,4 +1,14 @@
-
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parser_main.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 13:56:37 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 13:56:39 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "parser.h"
 
@@ -101,8 +111,6 @@ t_cmd	*parse_tokens(t_token *ts)
 		if (parse_handle_token(&ts, &cur, &pipe) != 0)
 			return (NULL);
 	}
-	if (pipe == NULL)
-		return (NULL);
 	if (pipe->argv == NULL && pipe->redirs == NULL)
 	{
 		syntax_err(NULL, &pipe);

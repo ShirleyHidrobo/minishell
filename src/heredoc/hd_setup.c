@@ -1,8 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   hd_setup.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 14:05:07 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 14:05:09 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "heredoc.h"
+#include "shell.h"
 #include "signals.h"
+#include "terminal.h"
 
-static int	hd_process_redirs(t_redir *r, char **envp, int *last_status)
+static int	hd_process_redirs(t_redir *r, t_shell_ctx *ctx)
 {
 	int	res;
 
@@ -10,7 +23,7 @@ static int	hd_process_redirs(t_redir *r, char **envp, int *last_status)
 	{
 		if (r->type == R_HEREDOC)
 		{
-			res = process_heredoc(r, envp, last_status);
+			res = process_heredoc(r, ctx);
 			if (res != 0)
 				return (res);
 		}
@@ -19,15 +32,15 @@ static int	hd_process_redirs(t_redir *r, char **envp, int *last_status)
 	return (0);
 }
 
-static int	hd_process_cmds(t_cmd *cmds, char **envp, int *last_status)
+static int	hd_process_cmds(t_shell_ctx *ctx)
 {
 	t_cmd	*cur;
 	int		res;
 
-	cur = cmds;
+	cur = ctx->cmds;
 	while (cur)
 	{
-		res = hd_process_redirs(cur->redirs, envp, last_status);
+		res = hd_process_redirs(cur->redirs, ctx);
 		if (res != 0)
 			return (res);
 		cur = cur->next;
@@ -35,9 +48,11 @@ static int	hd_process_cmds(t_cmd *cmds, char **envp, int *last_status)
 	return (0);
 }
 
-static int	hd_finish(int res)
+static int	hd_finish(t_shell_ctx *ctx, int res)
 {
 	set_sig_interactive();
+	ms_restore_termios(ctx);
+	ms_set_termios(0);
 	if (res == 2)
 		return (2);
 	if (res != 0)
@@ -45,12 +60,23 @@ static int	hd_finish(int res)
 	return (0);
 }
 
-int	setup_heredocs(t_cmd *cmds, char **envp, int *last_status)
+// static int	hd_finish(int res)
+// {
+// 	set_sig_interactive();
+// 	ms_set_termios(0);
+// 	if (res == 2)
+// 		return (2);
+// 	if (res != 0)
+// 		return (1);
+// 	return (0);
+// }
+
+int	setup_heredocs(t_shell_ctx *ctx)
 {
 	int	res;
 
 	g_sig = 0;
-	set_sig_heredoc_parent();
-	res = hd_process_cmds(cmds, envp, last_status);
-	return (hd_finish(res));
+	set_sig_ignore();
+	res = hd_process_cmds(ctx);
+	return (hd_finish(ctx, res));
 }

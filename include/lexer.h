@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   lexer.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 14:22:24 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 14:22:26 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef LEXER_H
 # define LEXER_H
 
@@ -30,11 +42,10 @@ typedef struct s_wbuf
 	size_t	cap;
 }	t_wbuf;
 
-
 t_token	*lex_line(const char *s);
 void	token_list_clear(t_token **lst);
 
-int	    is_space(char c);
+int		is_space(char c);
 void	skip_spaces(const char *s, size_t *i);
 int		is_op_char(char c);
 char	*read_word(const char *s, size_t *i);

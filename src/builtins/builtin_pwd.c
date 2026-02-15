@@ -1,8 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   builtin_pwd.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 14:08:24 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 14:15:02 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "builtins.h"
 #include "libft.h"
-# include <errno.h>
-# include <stdio.h>
+#include <errno.h>
+#include <stdio.h>
 
 int	builtin_pwd(char **argv)
 {

@@ -1,14 +1,23 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   lexer_lex.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 14:02:13 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 14:02:16 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "lexer.h"
 
-// helper to clear token list and return NULL on error
 static t_token	*lex_lex_error(t_token **lst)
 {
 	token_list_clear(lst);
 	return (NULL);
 }
 
-// read one WORD token and append it to the list
 static int	lex_add_word(const char *s, size_t *i, t_token **lst)
 {
 	char	*w;
@@ -27,7 +36,6 @@ static int	lex_add_word(const char *s, size_t *i, t_token **lst)
 	return (0);
 }
 
-// main lexer: builds a linked list of tokens from the input line
 t_token	*lex_line(const char *s)
 {
 	size_t	i;

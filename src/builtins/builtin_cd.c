@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   builtin_cd.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 14:08:57 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 14:16:57 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "builtins.h"
 #include "libft.h"
@@ -59,7 +70,6 @@ int	builtin_cd(char **argv, char ***envp)
 {
 	char	*target;
 
-	/* case: cd */
 	if (!argv[1])
 	{
 		target = get_env_val(*envp, "HOME");
@@ -70,13 +80,10 @@ int	builtin_cd(char **argv, char ***envp)
 		}
 		return (change_dir(target, envp));
 	}
-
-	/* case: cd <dir> <extra> → too many args */
 	if (argv[2])
 	{
 		print_cd_error("too many arguments", NULL);
 		return (1);
 	}
-
 	return (change_dir(argv[1], envp));
 }

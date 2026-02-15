@@ -1,80 +1,92 @@
 NAME = minishell
 
-SRCS	= src/shell/main.c \
-     	  src/shell/line_exec.c \
-		  src/shell/line_utils.c \
-		  src/signals/signal_modes.c \
-		  src/signals/signals_heredoc.c \
-		  src/lexer/lexer_lex.c \
-		  src/lexer/lexer_op.c \
-		  src/lexer/lexer_tokens.c \
-		  src/lexer/lexer_utils.c \
-		  src/lexer/lexer_word.c \
-		  src/parser/parser_args.c \
-		  src/parser/parser_cmd.c \
-		  src/parser/parser_main.c \
-		  src/parser/ast.c \
-		  src/exec/exec_builtin.c \
-      	  src/exec/exec_pipeline.c \
-		  src/exec/exec_spawn.c \
-		  src/exec/exec_pipeline_spawn.c \
-		  src/exec/exec_pipeline_utils.c \
-		  src/exec/exec_child.c \
-		  src/exec/exec_path.c \
-		  src/exec/exec_redir.c \
-		  src/exec/exec_utils.c \
-		  src/builtins/builtin_cd.c \
-		  src/builtins/builtin_echo.c \
-		  src/builtins/builtin_export.c \
-		  src/builtins/builtin_env.c \
-		  src/builtins/builtins_utils.c \
-		  src/env/env_unset.c \
-		  src/env/env_utils.c \
-		  src/env/env_env.c \
-		  src/env/env_get.c \
-		  src/builtins/builtin_exit.c \
-		  src/builtins/builtin_pwd.c \
-		  src/expand/expand_utils.c \
-		  src/expand/expand_word.c \
-		  src/expand/expand_word_utils.c \
-		  src/expand/expand_cmd.c \
-		  src/heredoc/hd_name.c \
-		  src/heredoc/hd_write.c \
-		  src/heredoc/hd_loop.c \
-		  src/heredoc/hd_process.c \
-		  src/heredoc/hd_setup.c \
-		  src/heredoc/heredoc_utils.c \
-		  src/terminal/termios.c
-
-
-OBJS = $(SRCS:.c=.o)
-INCS = -I include -I libft -I/opt/homebrew/opt/readline/include
-
-COMP = cc
+CC = cc
 CFLAGS = -Wall -Wextra -Werror -g
 
-LIBFT = ./libft/libft.a
+SRC_FOLDER = src
+OBJ_FOLDER = obj
+LIBFT_DIR = libft
+LIBFT = $(LIBFT_DIR)/libft.a
 
-all: ${NAME}
+READLINE_INC = -I/opt/homebrew/opt/readline/include
+READLINE_LIB = -L/opt/homebrew/opt/readline/lib -lreadline
 
-.c.o: 
-	${COMP} ${CFLAGS} ${INCS} -c $< -o $@
+INCLUDES = -I include -I $(LIBFT_DIR) $(READLINE_INC)
 
-${NAME}: ${OBJS} ${LIBFT}
-	${COMP} ${CFLAGS} ${OBJS} ${LIBFT} -L/opt/homebrew/opt/readline/lib -lreadline -o ${NAME}
+SRCS = $(SRC_FOLDER)/shell/main.c \
+	$(SRC_FOLDER)/shell/line_exec.c \
+	$(SRC_FOLDER)/shell/line_utils.c \
+	$(SRC_FOLDER)/signals/signal_modes.c \
+	$(SRC_FOLDER)/signals/signals_heredoc.c \
+	$(SRC_FOLDER)/lexer/lexer_lex.c \
+	$(SRC_FOLDER)/lexer/lexer_op.c \
+	$(SRC_FOLDER)/lexer/lexer_tokens.c \
+	$(SRC_FOLDER)/lexer/lexer_utils.c \
+	$(SRC_FOLDER)/lexer/lexer_word.c \
+	$(SRC_FOLDER)/parser/parser_args.c \
+	$(SRC_FOLDER)/parser/parser_cmd.c \
+	$(SRC_FOLDER)/parser/parser_main.c \
+	$(SRC_FOLDER)/parser/ast.c \
+	$(SRC_FOLDER)/exec/exec_builtin.c \
+	$(SRC_FOLDER)/exec/exec_pipeline.c \
+	$(SRC_FOLDER)/exec/exec_spawn.c \
+	$(SRC_FOLDER)/exec/exec_pipeline_spawn.c \
+	$(SRC_FOLDER)/exec/exec_pipeline_utils.c \
+	$(SRC_FOLDER)/exec/exec_child.c \
+	$(SRC_FOLDER)/exec/exec_path.c \
+	$(SRC_FOLDER)/exec/exec_redir.c \
+	$(SRC_FOLDER)/exec/exec_utils.c \
+	$(SRC_FOLDER)/env/env_unset.c \
+	$(SRC_FOLDER)/env/env_utils.c \
+	$(SRC_FOLDER)/env/env_env.c \
+	$(SRC_FOLDER)/env/env_get.c \
+	$(SRC_FOLDER)/builtins/builtin_cd.c \
+	$(SRC_FOLDER)/builtins/builtin_echo.c \
+	$(SRC_FOLDER)/builtins/builtin_export.c \
+	$(SRC_FOLDER)/builtins/builtin_env.c \
+	$(SRC_FOLDER)/builtins/builtins_utils.c \
+	$(SRC_FOLDER)/builtins/builtin_exit.c \
+	$(SRC_FOLDER)/builtins/builtin_pwd.c \
+	$(SRC_FOLDER)/expand/expand_utils.c \
+	$(SRC_FOLDER)/expand/expand_word.c \
+	$(SRC_FOLDER)/expand/expand_word_utils.c \
+	$(SRC_FOLDER)/expand/expand_cmd.c \
+	$(SRC_FOLDER)/heredoc/hd_name.c \
+	$(SRC_FOLDER)/heredoc/hd_write.c \
+	$(SRC_FOLDER)/heredoc/hd_loop.c \
+	$(SRC_FOLDER)/heredoc/hd_process.c \
+	$(SRC_FOLDER)/heredoc/hd_setup.c \
+	$(SRC_FOLDER)/heredoc/heredoc_utils.c \
+	$(SRC_FOLDER)/terminal/termios.c
 
-${LIBFT}:
-	@${MAKE} -C ./libft --no-print-directory
+OBJS = $(patsubst $(SRC_FOLDER)/%.c,$(OBJ_FOLDER)/%.o,$(SRCS))
 
-clean: 
-	@rm -rf ${OBJS}
-	@${MAKE} -C ./libft --no-print-directory clean
+all: $(NAME)
+
+$(NAME): $(OBJS) $(LIBFT)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) $(READLINE_LIB) -o $(NAME)
+
+$(LIBFT):
+	@$(MAKE) -C $(LIBFT_DIR) --no-print-directory
+
+$(OBJ_FOLDER):
+	@mkdir -p $(OBJ_FOLDER)
+
+$(OBJ_FOLDER)/%.o: $(SRC_FOLDER)/%.c | $(OBJ_FOLDER)
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+clean:
+	@rm -rf $(OBJ_FOLDER)
+	@$(MAKE) -C $(LIBFT_DIR) --no-print-directory clean
 
 fclean: clean
-	@rm -rf ${NAME}
-	@${MAKE} -C ./libft --no-print-directory fclean
+	@rm -f $(NAME)
+	@$(MAKE) -C $(LIBFT_DIR) --no-print-directory fclean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+valgrind: all
+	valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes ./$(NAME)
 
+.PHONY: all clean fclean re valgrind

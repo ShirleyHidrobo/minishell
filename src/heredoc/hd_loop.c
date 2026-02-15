@@ -1,8 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   hd_loop.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 14:05:45 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 14:42:51 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-#include "heredoc.h"
-#include "signals.h"
 #include "expand.h"
+#include "heredoc.h"
 #include "libft.h"
+#include "signals.h"
 #include <readline/readline.h>
 
 static int	hd_is_delim(const char *line, const char *delim)
@@ -15,14 +26,15 @@ static int	hd_is_delim(const char *line, const char *delim)
 	return (ft_strncmp(line, delim, dlen + 1) == 0);
 }
 
-static char	*hd_expand_if_needed(t_hd *h, char *line, int *need_free)
+static char	*hd_expand_if_needed(t_hd *h, char *line, int *need_free,
+		t_shell_ctx *ctx)
 {
 	char	*exp;
 
 	*need_free = 0;
 	if (h->quoted)
 		return (line);
-	exp = expand_word(line, h->envp, h->last_status);
+	exp = expand_word(line, ctx);
 	if (!exp)
 		return (NULL);
 	if (exp != line)
@@ -30,12 +42,12 @@ static char	*hd_expand_if_needed(t_hd *h, char *line, int *need_free)
 	return (exp);
 }
 
-static int	hd_handle_line(t_hd *h, char *line)
+static int	hd_handle_line(t_hd *h, char *line, t_shell_ctx *ctx)
 {
 	char	*exp;
 	int		need_free;
 
-	exp = hd_expand_if_needed(h, line, &need_free);
+	exp = hd_expand_if_needed(h, line, &need_free, ctx);
 	if (!exp)
 		return (1);
 	if (hd_write_line(h->fd, exp))
@@ -49,7 +61,18 @@ static int	hd_handle_line(t_hd *h, char *line)
 	return (0);
 }
 
-int	hd_read_loop(t_hd *h)
+static void	hd_warn_eof(t_hd *h)
+{
+	if (!h || !h->delim)
+		return ;
+	write(2,
+		"minishell: warning: here-document delimited by end-of-file (wanted `",
+		69);
+	write(2, h->delim, ft_strlen(h->delim));
+	write(2, "')\n", 3);
+}
+
+int	hd_read_loop(t_hd *h, t_shell_ctx *ctx)
 {
 	char	*line;
 
@@ -57,19 +80,18 @@ int	hd_read_loop(t_hd *h)
 	{
 		line = readline("> ");
 		if (g_sig == SIGINT)
-		{
-			if (line)
-				free(line);
-			return (2);
-		}
+			return (free(line), 2);
 		if (!line)
+		{
+			hd_warn_eof(h);
 			return (0);
+		}
 		if (hd_is_delim(line, h->delim))
 		{
 			free(line);
 			break ;
 		}
-		if (hd_handle_line(h, line))
+		if (hd_handle_line(h, line, ctx))
 			return (free(line), 1);
 		free(line);
 	}

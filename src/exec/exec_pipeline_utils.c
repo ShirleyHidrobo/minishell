@@ -1,5 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exec_pipeline_utils.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 14:07:21 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 14:07:23 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "exec.h"
+#include "shell.h"
 #include <signal.h>
 #include <stdio.h>
 #include <sys/wait.h>
@@ -59,15 +71,14 @@ int	wait_for_children(pid_t *pids, int count)
 			last = handle_child_status(status, &printed);
 		i++;
 	}
-	free(pids);
 	return (last);
 }
 
-void	child_side(t_cmd *cur, int prev_fd, int pipe_fd[2], t_execctx *x)
+void	child_side(t_cmd *cur, int prev_fd, int pipe_fd[2], t_shell_ctx *ctx)
 {
 	if (pipe_fd[1] != -1)
 		close(pipe_fd[0]);
-	exec_cmd_child(cur, prev_fd, pipe_fd[1], x);
+	exec_cmd_child(cur, prev_fd, pipe_fd[1], ctx);
 }
 
 int	parent_side(int prev_fd, int pipe_fd[2])

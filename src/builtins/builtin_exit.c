@@ -1,32 +1,35 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   builtin_exit.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 14:08:34 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 14:15:58 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "builtins.h"
 #include "exec.h"
+#include <limits.h>
 
-static int	is_numeric(const char *s)
+static int	ms_exit_code_from_ll(long long v)
 {
-	int	i;
+	unsigned char	c;
 
-	if (!s || !s[0])
-		return (0);
-	i = 0;
-	if (s[i] == '+' || s[i] == '-')
-		i++;
-	if (!s[i])
-		return (0);
-	while (s[i])
-	{
-		if (!ft_isdigit(s[i]))
-			return (0);
-		i++;
-	}
-	return (1);
+	c = (unsigned char)v;
+	return ((int)c);
 }
 
 static void	exit_error(const char *msg, const char *arg)
 {
-	write(2, "minishell: exit: ", 18);
+	write(2, "minishell: exit", 15);
 	if (arg)
+	{
+		write(2, ": ", 2);
 		write(2, arg, ft_strlen(arg));
+	}
 	if (msg)
 	{
 		write(2, ": ", 2);
@@ -37,16 +40,18 @@ static void	exit_error(const char *msg, const char *arg)
 
 static int	handle_exit_args(char **argv, int last_status, int *should_exit)
 {
+	long long	v;
+
 	if (!argv[1])
 	{
 		*should_exit = 1;
 		return (last_status);
 	}
-	if (!is_numeric(argv[1]))
+	if (!ms_atoll_strict(argv[1], &v))
 	{
 		exit_error("numeric argument required", argv[1]);
 		*should_exit = 1;
-		return (255);
+		return (2);
 	}
 	if (argv[2])
 	{
@@ -55,7 +60,7 @@ static int	handle_exit_args(char **argv, int last_status, int *should_exit)
 		return (1);
 	}
 	*should_exit = 1;
-	return (ft_atoi(argv[1]));
+	return (ms_exit_code_from_ll(v));
 }
 
 int	builtin_exit(char **argv, int last_status)

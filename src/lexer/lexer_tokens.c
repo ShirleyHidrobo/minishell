@@ -1,7 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   lexer_tokens.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: yafshar <yafshar@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 14:00:46 by yafshar           #+#    #+#             */
+/*   Updated: 2026/02/11 14:00:49 by yafshar          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "lexer.h"
 
-// allocate and initialize a new token with given value and type
 t_token	*token_new(char *value, t_tok_type type)
 {
 	t_token	*t;
@@ -10,12 +20,11 @@ t_token	*token_new(char *value, t_tok_type type)
 	if (!t)
 		return (NULL);
 	t->type = type;
-	t->val = value; 
+	t->val = value;
 	t->next = NULL;
 	return (t);
 }
 
-// append token 'new' to the end of the list *lst
 void	token_add_back(t_token **lst, t_token *new)
 {
 	t_token	*cur;
@@ -33,7 +42,6 @@ void	token_add_back(t_token **lst, t_token *new)
 	cur->next = new;
 }
 
-// free the whole token list and set *lst to NULL
 void	token_list_clear(t_token **lst)
 {
 	t_token	*tmp;
